@@ -69,9 +69,9 @@ const MealForm: React.FC = () => {
         try {
             setIsLoading(true);
             if (id !== undefined) {
-                await axiosApi.put(`/quotes/${id}.json`, dishesCalories);
+                await axiosApi.put(`/dishes/${id}.json`, dishesCalories);
             } else {
-                await axiosApi.post('/quotes.json', dishesCalories);
+                await axiosApi.post('/dishes.json', dishesCalories);
 
             }
             setDish(emptyDish)
