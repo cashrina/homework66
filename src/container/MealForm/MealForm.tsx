@@ -1,37 +1,31 @@
-import axiosApi from "../../axiosApi.ts";
-import React, {ChangeEvent, useCallback, useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
-import {Calories, CaloriesMutation} from "../../types.ts";
+import { useNavigate, useParams } from "react-router-dom";
+import { CaloriesMutation } from "../../types.ts";
 import ButtonSpinner from "../../components/Spinner/ButtonSpinner.tsx";
+import Spinner from "../../components/Spinner/Spinner.tsx";
+import React, {useCallback, useEffect, useState} from "react";
+import axiosApi from "../../axiosApi.ts";
 
-const emptyDish = {
+const emptyDish: CaloriesMutation = {
     id: '',
     time: '',
     description: '',
-    calories: 0,
+    calories: '',
 };
 
 const MealForm: React.FC = () => {
     const navigate = useNavigate();
-    const {id} = useParams();
+    const { id } = useParams();
 
-    const [dish, setDish] = useState<Calories>(emptyDish);
-    const [dishMutation, setDishMutation] = useState<CaloriesMutation>({
-        id: '',
-        time: '',
-        description: '',
-        calories: '',
-    });
-
+    const [dishMutation, setDishMutation] = useState<CaloriesMutation>(emptyDish);
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(false);
 
     const fetchOneDish = useCallback(async (id: string) => {
         setIsFetching(true);
         try {
-            const response = await axiosApi.get<Calories | null>(`/quotes/${id}.json`);
+            const response = await axiosApi.get<CaloriesMutation | null>(`/dishes/${id}.json`);
             if (response.data) {
-                setDish(response.data);
+                setDishMutation(response.data);
             }
         } catch (error) {
             console.error("Error fetching quote:", error);
@@ -44,12 +38,12 @@ const MealForm: React.FC = () => {
         if (id !== undefined) {
             void fetchOneDish(id);
         } else {
-            setDish(emptyDish)
+            setDishMutation(emptyDish);
         }
     }, [id, fetchOneDish]);
 
-    const onFieldChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const {name, value} = event.target;
+    const onFieldChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = event.target;
 
         setDishMutation(prevState => ({
             ...prevState,
@@ -60,6 +54,7 @@ const MealForm: React.FC = () => {
     const onFormSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
+
         const dishesCalories = {
             time: dishMutation.time,
             description: dishMutation.description,
@@ -72,9 +67,8 @@ const MealForm: React.FC = () => {
                 await axiosApi.put(`/dishes/${id}.json`, dishesCalories);
             } else {
                 await axiosApi.post('/dishes.json', dishesCalories);
-
             }
-            setDish(emptyDish)
+            setDishMutation(emptyDish);
             navigate("/");
         } catch (error) {
             console.error('Error while adding/editing quote:', error);
@@ -83,9 +77,9 @@ const MealForm: React.FC = () => {
         }
     };
 
-    const form = (
+    let form = (
         <form onSubmit={onFormSubmit}>
-            <h4>{dish.id ? 'Edit dish' : 'Add new dish'}</h4>
+            <h4>{id ? 'Edit dish' : 'Add new dish'}</h4>
             <div className="form-group">
                 <label>Select Meal Type</label>
                 <select
@@ -125,13 +119,25 @@ const MealForm: React.FC = () => {
                 />
             </div>
             <button type="submit" className="btn btn-primary mt-2" disabled={isLoading}>
-                {isLoading && <ButtonSpinner/>}
-                {dish.id ? 'Update' : 'Create'}
+                {isLoading && <ButtonSpinner />}
+                {id ? 'Update' : 'Create'}
             </button>
         </form>
     );
 
-    return isFetching ? isFetching : (
+    if (isLoading) {
+        form = (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '300px' }}>
+                <Spinner />
+            </div>
+        );
+    }
+
+    return isFetching ? (
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '300px' }}>
+            <Spinner />
+        </div>
+    ) : (
         <div className="container mt-4">
             <div className="row justify-content-center">
                 <div className="col-md-6">
@@ -142,4 +148,4 @@ const MealForm: React.FC = () => {
     );
 };
 
-    export default MealForm;
+export default MealForm;
