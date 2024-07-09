@@ -2,7 +2,7 @@ export interface Calories {
     id: string,
     time: string,
     description:string,
-    calories: string,
+    calories: number,
 }
 
 export type ApiDish = Omit<Calories, 'id'>;
@@ -12,7 +12,8 @@ export interface ApiDishes {
 }
 
 export interface CaloriesMutation {
+    id: string,
     time: string,
     description:string,
-    calories: number,
+    calories: string,
 }
